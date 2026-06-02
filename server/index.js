@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
+const { ensureDb } = require('./setup-db');
 const errorHandler = require('./middleware/errorHandler');
 const categoriesRouter = require('./routes/categories');
 const productsRouter = require('./routes/products');
@@ -12,6 +13,8 @@ const { handleWebhook } = require('./routes/payments');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+ensureDb();
 
 app.post(
   '/api/payments/webhook',

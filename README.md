@@ -16,13 +16,12 @@ HTML, CSS, Vanilla JS, Tailwind · Node.js, Express · SQLite · multer, sharp, 
 
 ```bash
 npm install
-npm run db:init      # пустая БД + категории
 npm run build:css
 cp .env.example .env # заполните Stripe ключи
-npm run dev
+npm run dev          # БД создаётся автоматически при старте
 ```
 
-Опционально демо-товары: `npm run db:seed`
+Полный сброс БД: `npm run db:init`. Опционально демо-товары: `npm run db:seed`
 
 ## Добавление товаров
 
@@ -66,7 +65,7 @@ stripe listen --forward-to localhost:3000/api/payments/webhook
    - `BASE_URL=https://ваш-домен.up.railway.app`
    - `STRIPE_CURRENCY=kzt`
 4. Volume (рекомендуется): mount `/app/data` и `/app/public/uploads`
-5. После деплоя: `npm run db:init` через Railway shell (один раз)
+5. После деплоя база создастся **сама** при старте сервера
 6. Stripe Dashboard → Webhooks → URL: `https://ваш-домен/api/payments/webhook`
 
 ## API
