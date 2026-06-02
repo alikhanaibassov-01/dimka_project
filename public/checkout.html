@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тапсырыс — QazMarket</title>
+  <link rel="stylesheet" href="/css/output.css" />
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-800">
+  <header id="site-header" class="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur"></header>
+
+  <main class="mx-auto max-w-4xl px-4 py-10">
+    <h1 class="text-3xl font-bold text-qaz-dark" data-i18n="checkout.title"></h1>
+    <p class="mt-2 text-sm text-gray-500" data-i18n="checkout.paymentNote"></p>
+
+    <div class="mt-8 grid gap-8 lg:grid-cols-2">
+      <form id="checkout-form" class="space-y-4 rounded-xl border bg-white p-6 shadow-sm">
+        <div>
+          <label class="mb-1 block text-sm font-medium" data-i18n="checkout.name"></label>
+          <input type="text" name="name" required class="input-field" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium" data-i18n="checkout.phone"></label>
+          <input type="tel" name="phone" required class="input-field" placeholder="+7 7XX XXX XX XX" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium" data-i18n="checkout.city"></label>
+          <input type="text" name="city" required class="input-field" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium" data-i18n="checkout.address"></label>
+          <input type="text" name="address" required class="input-field" />
+        </div>
+        <div>
+          <label class="mb-1 block text-sm font-medium" data-i18n="checkout.comment"></label>
+          <textarea name="comment" rows="3" class="input-field"></textarea>
+        </div>
+        <p id="checkout-error" class="hidden text-sm text-red-600"></p>
+        <button type="submit" class="btn-primary w-full" data-i18n="checkout.submit"></button>
+      </form>
+
+      <div class="rounded-xl border bg-white p-6 shadow-sm">
+        <h2 class="font-semibold text-gray-800" data-i18n="cart.title"></h2>
+        <div id="checkout-summary" class="mt-4"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="site-footer" class="mt-16 border-t bg-white"></footer>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/checkout.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QazMarket — Қазақстан өнімі</title>
+  <link rel="stylesheet" href="/css/output.css" />
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-800">
+  <header id="site-header" class="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur"></header>
+
+  <main>
+    <section class="relative overflow-hidden bg-gradient-to-br from-qaz-teal to-teal-700 text-white">
+      <div class="mx-auto grid max-w-6xl items-center gap-8 px-4 py-16 md:grid-cols-2 md:py-24">
+        <div>
+          <p class="mb-2 text-sm font-semibold uppercase tracking-widest text-qaz-gold">Made in Kazakhstan</p>
+          <h1 class="text-4xl font-bold leading-tight md:text-5xl" data-i18n="hero.title"></h1>
+          <p class="mt-4 text-lg text-teal-100" data-i18n="hero.subtitle"></p>
+          <a href="/catalog.html" class="mt-8 inline-flex rounded-lg bg-qaz-gold px-6 py-3 font-semibold text-qaz-dark transition hover:bg-amber-300" data-i18n="hero.cta"></a>
+        </div>
+        <div class="relative flex items-end justify-center gap-3 sm:gap-8 md:gap-12">
+          <img src="/assets/baursak.png" alt="Бауырсақ" class="hero-deco h-[8.75rem] w-auto sm:h-[12.5rem] md:h-[15rem]" />
+          <img src="/assets/dombyra.png" alt="Домбыра" class="hero-deco h-[12.5rem] w-auto sm:h-[16.25rem] md:h-80" />
+        </div>
+      </div>
+      <div class="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10"></div>
+      <div class="pointer-events-none absolute -bottom-10 right-1/4 h-40 w-40 rounded-full bg-qaz-gold/20"></div>
+    </section>
+
+    <section class="mx-auto max-w-6xl px-4 py-16">
+      <h2 class="text-2xl font-bold text-qaz-dark" data-i18n="featured.title"></h2>
+      <div id="featured-grid" class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"></div>
+    </section>
+
+    <section class="border-t bg-white">
+      <div class="mx-auto max-w-6xl px-4 py-16">
+        <h2 class="text-2xl font-bold text-qaz-dark" data-i18n="about.title"></h2>
+        <p class="mt-4 max-w-3xl text-gray-600 leading-relaxed" data-i18n="about.text"></p>
+        <div class="mt-10 grid gap-6 sm:grid-cols-3">
+          <div class="rounded-xl border border-teal-100 bg-teal-50/50 p-6">
+            <span class="text-2xl">🇰🇿</span>
+            <h3 class="mt-3 font-semibold" data-i18n="trust.local"></h3>
+            <p class="mt-2 text-sm text-gray-600" data-i18n="tagline"></p>
+          </div>
+          <div class="rounded-xl border border-amber-100 bg-amber-50/50 p-6">
+            <span class="text-2xl">📍</span>
+            <h3 class="mt-3 font-semibold" data-i18n="trust.region"></h3>
+            <p class="mt-2 text-sm text-gray-600">Алматы, Астана, Шымкент...</p>
+          </div>
+          <div class="rounded-xl border border-green-100 bg-green-50/50 p-6">
+            <span class="text-2xl">🌿</span>
+            <h3 class="mt-3 font-semibold" data-i18n="trust.organic"></h3>
+            <p class="mt-2 text-sm text-gray-600">Табиғи өнімдер</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer" class="mt-auto border-t bg-white"></footer>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/products-ui.js"></script>
+  <script src="/js/home.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

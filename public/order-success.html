@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Тапсырыс қабылданды — QazMarket</title>
+  <link rel="stylesheet" href="/css/output.css" />
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-800">
+  <header id="site-header" class="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur"></header>
+
+  <main class="mx-auto max-w-lg px-4 py-20 text-center">
+    <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-teal-100 text-4xl">✓</div>
+    <h1 class="mt-6 text-3xl font-bold text-qaz-dark" data-i18n="success.title"></h1>
+    <p class="mt-4 text-gray-600">
+      <span data-i18n="success.orderId"></span>:
+      <strong id="order-id" class="text-qaz-teal"></strong>
+    </p>
+    <p class="mt-2 text-gray-600">
+      <span data-i18n="success.total"></span>:
+      <strong id="order-total" class="text-qaz-teal"></strong>
+    </p>
+    <p class="mt-2 text-sm text-gray-500">
+      <span id="order-status"></span>
+    </p>
+    <a href="/" class="btn-primary mt-10 inline-flex" data-i18n="success.home"></a>
+  </main>
+
+  <footer id="site-footer" class="mt-16 border-t bg-white"></footer>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/order-success.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

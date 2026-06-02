@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Каталог — QazMarket</title>
+  <link rel="stylesheet" href="/css/output.css" />
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-800">
+  <header id="site-header" class="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur"></header>
+
+  <main class="mx-auto max-w-6xl px-4 py-10">
+    <h1 class="text-3xl font-bold text-qaz-dark" data-i18n="catalog.title"></h1>
+
+    <form id="filter-form" class="mt-8 grid gap-4 rounded-xl border bg-white p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+      <div class="lg:col-span-2">
+        <label class="mb-1 block text-sm font-medium text-gray-600" data-i18n="catalog.search"></label>
+        <input type="search" id="filter-q" name="q" class="input-field" data-i18n="catalog.search" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-gray-600" data-i18n="catalog.category"></label>
+        <select id="filter-category" name="category" class="input-field"></select>
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-gray-600" data-i18n="catalog.region"></label>
+        <select id="filter-region" name="region" class="input-field"></select>
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-gray-600" data-i18n="catalog.priceMin"></label>
+        <input type="number" name="minPrice" class="input-field" min="0" placeholder="0" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-gray-600" data-i18n="catalog.priceMax"></label>
+        <input type="number" name="maxPrice" class="input-field" min="0" placeholder="200000" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium text-gray-600" data-i18n="catalog.sort"></label>
+        <select name="sort" class="input-field">
+          <option value="id" data-i18n="catalog.sortDefault"></option>
+          <option value="price_asc" data-i18n="catalog.sortPriceAsc"></option>
+          <option value="price_desc" data-i18n="catalog.sortPriceDesc"></option>
+        </select>
+      </div>
+      <input type="hidden" name="page" value="1" />
+      <div class="flex items-end">
+        <button type="submit" class="btn-primary w-full" data-i18n="catalog.apply"></button>
+      </div>
+    </form>
+
+    <p id="catalog-meta" class="mt-6 text-sm text-gray-500"></p>
+    <div id="catalog-grid" class="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
+  </main>
+
+  <footer id="site-footer" class="mt-16 border-t bg-white"></footer>
+
+  <script src="/js/i18n.js"></script>
+  <script src="/js/cart.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/layout.js"></script>
+  <script src="/js/products-ui.js"></script>
+  <script src="/js/catalog.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
