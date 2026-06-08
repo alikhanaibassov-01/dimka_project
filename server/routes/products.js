@@ -23,20 +23,14 @@ function mapProduct(row) {
 
 router.get('/', (req, res) => {
   const db = getDb();
-  const {
-    category,
-    region,
-    q,
-    minPrice,
-    maxPrice,
-    sort = 'id',
-    page = '1',
-    limit = '20',
-    featured,
-  } = req.query;
+  const { category, region, q, minPrice, maxPrice, sort = 'id', page = '1', limit = '20', featured, all } = req.query;
 
-  const conditions = ['in_stock = 1'];
+  const conditions = [];
   const params = [];
+
+  if (all !== '1') {
+    conditions.push('in_stock = 1');
+  }
 
   if (category) {
     conditions.push('category_id = (SELECT id FROM categories WHERE slug = ?)');
@@ -150,6 +144,61 @@ router.get('/:id', (req, res) => {
   if (!row) {
     return res.status(404).json({ error: 'Товар табылмады / Товар не найден' });
   }
+  res.json(mapProduct(row));
+});
+
+router.put('/:id', (req, res) => {
+  const db = getDb();
+  const id = Number(req.params.id);
+  const existing = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
+  if (!existing) {
+    return res.status(404).json({ error: 'Товар не найден / Товар табылмады' });
+  }
+
+  const {
+    categoryId,
+    nameKk,
+    nameRu,
+    descriptionKk,
+    descriptionRu,
+    price,
+    region,
+    producerName,
+    imageUrl,
+    badge,
+    featured,
+    inStock,
+  } = req.body;
+
+  if (!categoryId || !nameKk?.trim() || !nameRu?.trim() || !price || !region?.trim() || !producerName?.trim()) {
+    return res.status(400).json({ error: 'Заполните обязательные поля / Міндетті өрістерді толтырыңыз' });
+  }
+
+  const finalImage = imageUrl?.trim() || existing.image_url;
+
+  db.prepare(
+    `UPDATE products SET
+      category_id = ?, name_kk = ?, name_ru = ?, description_kk = ?, description_ru = ?,
+      price = ?, region = ?, producer_name = ?, image_url = ?, badge = ?,
+      in_stock = ?, featured = ?
+    WHERE id = ?`
+  ).run(
+    Number(categoryId),
+    nameKk.trim(),
+    nameRu.trim(),
+    (descriptionKk || '').trim() || nameKk.trim(),
+    (descriptionRu || '').trim() || nameRu.trim(),
+    Number(price),
+    region.trim(),
+    producerName.trim(),
+    finalImage,
+    badge?.trim() || null,
+    inStock === false || inStock === 0 ? 0 : 1,
+    featured ? 1 : 0,
+    id
+  );
+
+  const row = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
   res.json(mapProduct(row));
 });
 

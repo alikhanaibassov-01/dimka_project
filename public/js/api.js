@@ -47,6 +47,17 @@ const API = {
     return json;
   },
 
+  async updateProduct(id, data) {
+    const res = await fetch(`/api/products/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Failed');
+    return json;
+  },
+
   async createCheckoutSession(data) {
     const res = await fetch('/api/payments/create-session', {
       method: 'POST',

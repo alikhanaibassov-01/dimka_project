@@ -10,4 +10,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (document.getElementById('checkout-form')) initCheckout();
   if (document.getElementById('order-id')) showOrderSuccess();
   if (document.getElementById('add-product-form')) initAddProduct();
+  if (document.getElementById('edit-product-form')) initEditProduct();
+  if (document.getElementById('manage-list')) loadManageProducts();
 });

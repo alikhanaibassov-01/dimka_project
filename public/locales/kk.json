@@ -73,5 +73,16 @@
   "add.description": "Сипаттама",
   "add.featured": "Басты бетте көрсету",
   "add.submit": "Сақтау",
-  "add.success": "Тауар қосылды"
+  "add.success": "Тауар қосылды",
+  "manage.title": "Тауарларды басқару",
+  "manage.link": "Тауарларды өңдеу",
+  "manage.hint": "Тізімнен тауарды таңдап, өңдеңіз.",
+  "manage.empty": "Тауар жоқ",
+  "edit.title": "Тауарды өңдеу",
+  "edit.hint": "Өзгерістерді сақтаңыз. Жаңа фото — тек қажет болса.",
+  "edit.link": "Өңдеу",
+  "edit.submit": "Сақтау",
+  "edit.success": "Сақталды",
+  "edit.imageHint": "Жаңа фото жүктемесең — ескі сурет қалады",
+  "edit.inStock": "Сатылымда"
 }

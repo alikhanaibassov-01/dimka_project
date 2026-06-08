@@ -38,6 +38,8 @@ function renderLayout() {
         <p data-i18n="footer.text"></p>
         <p class="mt-2 font-medium text-qaz-teal" data-i18n="tagline"></p>
         <a href="/add-product.html" class="mt-3 inline-block text-xs text-gray-400 hover:text-qaz-teal" data-i18n="add.link"></a>
+        <span class="mx-1 text-xs text-gray-300">·</span>
+        <a href="/manage-products.html" class="mt-3 inline-block text-xs text-gray-400 hover:text-qaz-teal" data-i18n="manage.link"></a>
       </div>
     `;
   }
