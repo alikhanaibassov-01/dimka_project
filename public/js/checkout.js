@@ -23,41 +23,58 @@ async function renderCheckoutSummary() {
   I18n.apply();
 }
 
+function getDeliveryMethod(form) {
+  const checked = form.querySelector('[name="deliveryMethod"]:checked');
+  return checked?.value || 'delivery';
+}
+
 function toggleDeliveryMode(form) {
-  const isPickup = form.deliveryMethod.value === 'pickup';
-  const deliveryFields = document.getElementById('delivery-fields');
-  const mapBlock = document.getElementById('pickup-map-checkout');
-  const cityInput = form.city;
-  const addressInput = form.address;
+  try {
+    const isPickup = getDeliveryMethod(form) === 'pickup';
+    const deliveryFields = document.getElementById('delivery-fields');
+    const mapBlock = document.getElementById('pickup-map-checkout');
+    const cityInput = form.querySelector('[name="city"]');
+    const addressInput = form.querySelector('[name="address"]');
 
-  if (deliveryFields) deliveryFields.classList.toggle('hidden', isPickup);
-  if (mapBlock) {
-    mapBlock.classList.toggle('hidden', !isPickup);
-    if (isPickup) {
-      mapBlock.dataset.loaded = '';
-      renderPickupMap('pickup-map-checkout');
+    if (deliveryFields) deliveryFields.classList.toggle('hidden', isPickup);
+
+    if (mapBlock) {
+      if (isPickup) {
+        mapBlock.classList.remove('hidden');
+        renderPickupMap('pickup-map-checkout');
+      } else {
+        mapBlock.classList.add('hidden');
+      }
     }
-  }
 
-  cityInput.required = !isPickup;
-  addressInput.required = !isPickup;
-  if (isPickup) {
-    cityInput.value = '';
-    addressInput.value = '';
+    if (cityInput) cityInput.required = !isPickup;
+    if (addressInput) addressInput.required = !isPickup;
+    if (isPickup) {
+      if (cityInput) cityInput.value = '';
+      if (addressInput) addressInput.value = '';
+    }
+  } catch (err) {
+    console.error('toggleDeliveryMode:', err);
   }
 }
 
 function prefillCheckoutFromUser(form, user) {
   if (!user || user.role !== 'client') return;
-  if (user.lastName && !form.lastName.value) form.lastName.value = user.lastName;
-  if (user.firstName && !form.firstName.value) form.firstName.value = user.firstName;
-  if (user.phone && !form.phone.value) form.phone.value = user.phone;
+  const lastName = form.querySelector('[name="lastName"]');
+  const firstName = form.querySelector('[name="firstName"]');
+  const phone = form.querySelector('[name="phone"]');
+  if (user.lastName && lastName && !lastName.value) lastName.value = user.lastName;
+  if (user.firstName && firstName && !firstName.value) firstName.value = user.firstName;
+  if (user.phone && phone && !phone.value) phone.value = user.phone;
 }
 
 async function initCheckout() {
-  await renderCheckoutSummary();
+  try {
+    await renderCheckoutSummary();
 
-  const form = document.getElementById('checkout-form');
+    const form = document.getElementById('checkout-form');
+    if (!form) return;
+
   const user = getCurrentUser();
   prefillCheckoutFromUser(form, user);
 
@@ -107,6 +124,14 @@ async function initCheckout() {
       btn.disabled = false;
     }
   });
+  } catch (err) {
+    console.error('initCheckout:', err);
+    const errEl = document.getElementById('checkout-error');
+    if (errEl) {
+      errEl.textContent = err.message || 'Error';
+      errEl.classList.remove('hidden');
+    }
+  }
 }
 
 window.addEventListener('lang-changed', renderCheckoutSummary);
