@@ -2,6 +2,7 @@ node_modules/
 data/marketplace.db
 data/marketplace.db-shm
 data/marketplace.db-wal
+data/sessions.db
 .env
 public/css/output.css
 public/uploads/*
