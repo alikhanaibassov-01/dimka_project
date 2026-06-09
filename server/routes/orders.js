@@ -1,5 +1,6 @@
 const express = require('express');
 const { getDb } = require('../db');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -8,71 +9,165 @@ function validatePhone(phone) {
   return /^\+?7?\d{10,11}$/.test(cleaned) || /^8\d{10}$/.test(cleaned);
 }
 
+function createOrder(db, body, userId = null) {
+  const { customerName, phone, city, address, comment, items, paymentMethod } = body;
+
+  if (!customerName?.trim() || !phone?.trim() || !city?.trim() || !address?.trim()) {
+    throw Object.assign(new Error('Заполните обязательные поля / Міндетті өрістерді толтырыңыз'), { status: 400 });
+  }
+  if (!validatePhone(phone)) {
+    throw Object.assign(new Error('Некорректный номер телефона / Телефон дұрыс емес'), { status: 400 });
+  }
+  if (!Array.isArray(items) || items.length === 0) {
+    throw Object.assign(new Error('Корзина пуста / Себет бос'), { status: 400 });
+  }
+
+  const method = paymentMethod === 'kaspi' ? 'kaspi' : 'cod';
+  const paymentStatus = method === 'kaspi' ? 'awaiting_kaspi' : 'cod';
+
+  let total = 0;
+  const lineItems = [];
+  const getProduct = db.prepare(
+    'SELECT id, price, in_stock, name_ru FROM products WHERE id = ? AND deleted = 0'
+  );
+
+  for (const item of items) {
+    const productId = Number(item.productId);
+    const qty = Number(item.qty);
+    if (!productId || !qty || qty < 1) {
+      throw Object.assign(new Error('Некорректная позиция / Қате тауар'), { status: 400 });
+    }
+    const product = getProduct.get(productId);
+    if (!product || !product.in_stock) {
+      throw Object.assign(new Error(`Товар #${productId} недоступен`), { status: 400 });
+    }
+    total += product.price * qty;
+    lineItems.push({ productId, qty, price: product.price, name: product.name_ru });
+  }
+
+  const insertOrder = db.prepare(`
+    INSERT INTO orders (user_id, customer_name, phone, city, address, comment, total, status, payment_status, payment_method)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'new', ?, ?)
+  `);
+  const insertItem = db.prepare(`
+    INSERT INTO order_items (order_id, product_id, qty, price_at_order)
+    VALUES (?, ?, ?, ?)
+  `);
+
+  return db.transaction(() => {
+    const result = insertOrder.run(
+      userId,
+      customerName.trim(),
+      phone.trim(),
+      city.trim(),
+      address.trim(),
+      comment?.trim() || null,
+      total,
+      paymentStatus,
+      method
+    );
+    const orderId = result.lastInsertRowid;
+    for (const line of lineItems) {
+      insertItem.run(orderId, line.productId, line.qty, line.price);
+    }
+    return { orderId, total, paymentMethod: method, paymentStatus };
+  })();
+}
+
 router.post('/', (req, res, next) => {
   try {
-    const { customerName, phone, city, address, comment, items } = req.body;
-
-    if (!customerName?.trim() || !phone?.trim() || !city?.trim() || !address?.trim()) {
-      return res.status(400).json({ error: 'Барлық міндетті өрістерді толтырыңыз / Заполните обязательные поля' });
-    }
-    if (!validatePhone(phone)) {
-      return res.status(400).json({ error: 'Телефон нөмірі дұрыс емес / Некорректный номер телефона' });
-    }
-    if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'Себет бос / Корзина пуста' });
-    }
-
     const db = getDb();
-    let total = 0;
-    const lineItems = [];
+    const userId = req.session?.userId || null;
+    const result = createOrder(db, req.body, userId);
 
-    const getProduct = db.prepare('SELECT id, price, in_stock FROM products WHERE id = ?');
+    const kaspiPhone = process.env.KASPI_PHONE || '+77001234567';
+    const kaspiName = process.env.KASPI_RECIPIENT || 'QazMarket';
 
-    for (const item of items) {
-      const productId = Number(item.productId);
-      const qty = Number(item.qty);
-      if (!productId || !qty || qty < 1) {
-        return res.status(400).json({ error: 'Себеттегі тауар дұрыс емес / Некорректная позиция в корзине' });
-      }
-      const product = getProduct.get(productId);
-      if (!product || !product.in_stock) {
-        return res.status(400).json({ error: `Тауар #${productId} қолжетімсіз / Товар недоступен` });
-      }
-      total += product.price * qty;
-      lineItems.push({ productId, qty, price: product.price });
-    }
-
-    const insertOrder = db.prepare(`
-      INSERT INTO orders (customer_name, phone, city, address, comment, total, status)
-      VALUES (?, ?, ?, ?, ?, ?, 'new')
-    `);
-    const insertItem = db.prepare(`
-      INSERT INTO order_items (order_id, product_id, qty, price_at_order)
-      VALUES (?, ?, ?, ?)
-    `);
-
-    const transaction = db.transaction(() => {
-      const result = insertOrder.run(
-        customerName.trim(),
-        phone.trim(),
-        city.trim(),
-        address.trim(),
-        comment?.trim() || null,
-        total
-      );
-      const orderId = result.lastInsertRowid;
-      for (const line of lineItems) {
-        insertItem.run(orderId, line.productId, line.qty, line.price);
-      }
-      return orderId;
+    res.status(201).json({
+      orderId: result.orderId,
+      total: result.total,
+      paymentMethod: result.paymentMethod,
+      paymentStatus: result.paymentStatus,
+      kaspiPhone: result.paymentMethod === 'kaspi' ? kaspiPhone : undefined,
+      kaspiRecipient: result.paymentMethod === 'kaspi' ? kaspiName : undefined,
     });
-
-    const orderId = transaction();
-
-    res.status(201).json({ orderId, total });
   } catch (err) {
     next(err);
   }
+});
+
+router.get('/mine', requireAuth, (req, res) => {
+  const db = getDb();
+  const orders = db
+    .prepare(
+      `SELECT id, created_at, total, status, payment_status, payment_method, city
+       FROM orders WHERE user_id = ? ORDER BY id DESC`
+    )
+    .all(req.session.userId);
+  res.json(orders);
+});
+
+router.get('/admin', requireAdmin, (req, res) => {
+  const db = getDb();
+  const orders = db
+    .prepare(
+      `SELECT id, created_at, customer_name, phone, total, status, payment_status, payment_method, city
+       FROM orders ORDER BY id DESC LIMIT 100`
+    )
+    .all();
+  res.json(orders);
+});
+
+router.patch('/:id/payment', requireAdmin, (req, res) => {
+  const db = getDb();
+  const id = Number(req.params.id);
+  const { paymentStatus } = req.body;
+
+  const allowed = ['paid', 'awaiting_kaspi', 'cod', 'cancelled'];
+  if (!allowed.includes(paymentStatus)) {
+    return res.status(400).json({ error: 'Invalid payment status' });
+  }
+
+  const order = db.prepare('SELECT id FROM orders WHERE id = ?').get(id);
+  if (!order) {
+    return res.status(404).json({ error: 'Заказ не найден' });
+  }
+
+  const status = paymentStatus === 'paid' ? 'paid' : undefined;
+  if (status) {
+    db.prepare(`UPDATE orders SET payment_status = ?, status = ? WHERE id = ?`).run(paymentStatus, status, id);
+  } else {
+    db.prepare(`UPDATE orders SET payment_status = ? WHERE id = ?`).run(paymentStatus, id);
+  }
+
+  res.json({ ok: true });
+});
+
+router.get('/:id', (req, res) => {
+  const db = getDb();
+  const order = db
+    .prepare(
+      `SELECT id, total, payment_status, payment_method, customer_name, created_at, user_id
+       FROM orders WHERE id = ?`
+    )
+    .get(req.params.id);
+
+  if (!order) {
+    return res.status(404).json({ error: 'Заказ не найден' });
+  }
+
+  const kaspiPhone = process.env.KASPI_PHONE || '+77001234567';
+  const kaspiName = process.env.KASPI_RECIPIENT || 'QazMarket';
+
+  res.json({
+    orderId: order.id,
+    total: order.total,
+    paymentStatus: order.payment_status,
+    paymentMethod: order.payment_method,
+    customerName: order.customer_name,
+    kaspiPhone: order.payment_method === 'kaspi' ? kaspiPhone : undefined,
+    kaspiRecipient: order.payment_method === 'kaspi' ? kaspiName : undefined,
+  });
 });
 
 module.exports = router;

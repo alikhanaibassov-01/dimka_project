@@ -4,78 +4,65 @@
 
 - Пустой каталог — вы сами добавляете товары
 - Загрузка фото (авто-обрезка 800×800 px)
-- Одинаковые карточки в каталоге
-- Оплата Visa / Mastercard через Stripe Checkout
-- Двуязычный интерфейс (қазақша / русский)
+- Оплата **Kaspi** (перевод) и **при получении** — реалистично для Казахстана
+- Три языка: қазақша / русский / English
+- Регистрация покупателей и отдельный вход администратора
+- Управление товарами: добавление, редактирование, удаление
 
 ## Стек
 
-HTML, CSS, Vanilla JS, Tailwind · Node.js, Express · SQLite · multer, sharp, Stripe
+HTML, CSS, Vanilla JS, Tailwind · Node.js, Express · SQLite · bcrypt, express-session
 
 ## Быстрый старт
 
 ```bash
 npm install
 npm run build:css
-cp .env.example .env # заполните Stripe ключи
+cp .env.example .env
 npm run dev          # БД создаётся автоматически при старте
 ```
 
 Полный сброс БД: `npm run db:init`. Опционально демо-товары: `npm run db:seed`
 
-## Добавление товаров
+## Вход
 
-1. Откройте `/add-product.html`
-2. Заполните форму и **загрузите фото**
-3. Фото сохраняется в `public/uploads/`, обрезается до 800×800
+| Роль | URL | По умолчанию |
+|------|-----|--------------|
+| Покупатель | `/register.html`, `/login.html` | регистрация свободная |
+| Админ | `/admin-login.html` | `admin@qazmarket.kz` / `admin123` |
 
-## Stripe (тестовый режим)
+Смените `ADMIN_EMAIL` и `ADMIN_PASSWORD` в `.env` на Railway.
 
-1. Зарегистрируйтесь на [stripe.com](https://stripe.com)
-2. Dashboard → Developers → API keys → скопируйте **Secret key** (`sk_test_...`)
-3. В `.env`:
-   ```
-   STRIPE_SECRET_KEY=sk_test_...
-   BASE_URL=http://localhost:3000
-   STRIPE_CURRENCY=kzt
-   ```
-4. Тестовая карта: `4242 4242 4242 4242`, любая дата и CVC
+## Оплата (Kaspi + COD)
 
-### Webhook (локально)
+Stripe в Казахстане недоступен для merchant-аккаунтов. Вместо этого:
 
-```bash
-stripe listen --forward-to localhost:3000/api/payments/webhook
+1. **Kaspi** — после заказа показывается номер для перевода и комментарий `QazMarket #123`
+2. **При получении** — оплата курьеру
+
+Настройте в `.env`:
+
+```
+KASPI_PHONE=+77001234567
+KASPI_RECIPIENT=QazMarket
 ```
 
-Скопируйте `whsec_...` в `.env` как `STRIPE_WEBHOOK_SECRET`.
-
-Без webhook статус оплаты обновится через `/api/payments/verify/:id` на странице успеха.
+Админ подтверждает Kaspi-переводы на `/admin-orders.html`.
 
 ## Деплой на Railway
 
-**Почему не Vercel:** SQLite и загрузка файлов требуют постоянного диска. Vercel serverless это не поддерживает без переделки на Postgres + облачное хранилище.
-
-**Railway:**
-
 1. Залейте проект на GitHub
 2. [railway.app](https://railway.app) → New Project → Deploy from GitHub
-3. Variables:
-   - `STRIPE_SECRET_KEY`
-   - `STRIPE_WEBHOOK_SECRET`
-   - `BASE_URL=https://ваш-домен.up.railway.app`
-   - `STRIPE_CURRENCY=kzt`
-4. Volume (рекомендуется): mount `/app/data` и `/app/public/uploads`
-5. После деплоя база создастся **сама** при старте сервера
-6. Stripe Dashboard → Webhooks → URL: `https://ваш-домен/api/payments/webhook`
+3. Variables: `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `KASPI_PHONE`, `BASE_URL`
+4. Volume: `/app/data` и `/app/public/uploads`
 
 ## API
 
 | Метод | Путь | Описание |
 |-------|------|----------|
-| POST | `/api/upload` | Загрузка фото |
-| POST | `/api/products` | Добавить товар |
-| GET | `/api/products` | Каталог |
-| POST | `/api/payments/create-session` | Stripe Checkout |
-| POST | `/api/payments/webhook` | Подтверждение оплаты |
-| GET | `/api/payments/verify/:id` | Проверка статуса заказа |
-# dimka_project
+| POST | `/api/auth/register` | Регистрация клиента |
+| POST | `/api/auth/login` | Вход |
+| POST | `/api/orders` | Оформить заказ |
+| GET | `/api/orders/mine` | Мои заказы (клиент) |
+| GET | `/api/orders/admin` | Все заказы (админ) |
+| DELETE | `/api/products/:id` | Удалить товар (админ) |

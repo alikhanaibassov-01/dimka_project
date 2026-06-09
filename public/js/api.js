@@ -1,6 +1,8 @@
 const API = {
+  fetchOpts: { credentials: 'include' },
+
   async getCategories() {
-    const res = await fetch('/api/categories');
+    const res = await fetch('/api/categories', API.fetchOpts);
     if (!res.ok) throw new Error('API error');
     return res.json();
   },
@@ -10,19 +12,19 @@ const API = {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== '' && v != null) qs.set(k, v);
     });
-    const res = await fetch(`/api/products?${qs}`);
+    const res = await fetch(`/api/products?${qs}`, API.fetchOpts);
     if (!res.ok) throw new Error('API error');
     return res.json();
   },
 
   async getProduct(id) {
-    const res = await fetch(`/api/products/${id}`);
+    const res = await fetch(`/api/products/${id}`, API.fetchOpts);
     if (!res.ok) throw new Error('API error');
     return res.json();
   },
 
   async getRegions() {
-    const res = await fetch('/api/products/regions');
+    const res = await fetch('/api/products/regions', API.fetchOpts);
     if (!res.ok) throw new Error('API error');
     return res.json();
   },
@@ -30,7 +32,7 @@ const API = {
   async uploadImage(file) {
     const fd = new FormData();
     fd.append('image', file);
-    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+    const res = await fetch('/api/upload', { method: 'POST', body: fd, credentials: 'include' });
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || 'Upload failed');
     return json;
@@ -40,6 +42,7 @@ const API = {
     const res = await fetch('/api/products', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     const json = await res.json();
@@ -51,6 +54,7 @@ const API = {
     const res = await fetch(`/api/products/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     const json = await res.json();
@@ -58,34 +62,106 @@ const API = {
     return json;
   },
 
-  async createCheckoutSession(data) {
-    const res = await fetch('/api/payments/create-session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+  async deleteProduct(id) {
+    const res = await fetch(`/api/products/${id}`, { method: 'DELETE', credentials: 'include' });
     const json = await res.json();
-    if (!res.ok) throw new Error(json.error || 'Payment failed');
+    if (!res.ok) throw new Error(json.error || 'Failed');
     return json;
   },
 
-  async verifyOrder(orderId) {
-    const res = await fetch(`/api/payments/verify/${orderId}`);
+  async createOrder(data) {
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Order failed');
+    return json;
+  },
+
+  async getOrder(id) {
+    const res = await fetch(`/api/orders/${id}`, API.fetchOpts);
     if (!res.ok) throw new Error('Order not found');
     return res.json();
+  },
+
+  async getMe() {
+    const res = await fetch('/api/auth/me', API.fetchOpts);
+    if (!res.ok) return null;
+    return res.json();
+  },
+
+  async login(email, password) {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Login failed');
+    return json;
+  },
+
+  async register(email, password, name) {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password, name }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Register failed');
+    return json;
+  },
+
+  async logout() {
+    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+  },
+
+  async getMyOrders() {
+    const res = await fetch('/api/orders/mine', API.fetchOpts);
+    if (!res.ok) throw new Error('Failed');
+    return res.json();
+  },
+
+  async getAdminOrders() {
+    const res = await fetch('/api/orders/admin', API.fetchOpts);
+    if (!res.ok) throw new Error('Failed');
+    return res.json();
+  },
+
+  async confirmOrderPayment(orderId, paymentStatus) {
+    const res = await fetch(`/api/orders/${orderId}/payment`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ paymentStatus }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Failed');
+    return json;
   },
 };
 
 function productName(p) {
-  return I18n.lang === 'kk' ? p.nameKk : p.nameRu;
+  if (I18n.lang === 'kk') return p.nameKk;
+  if (I18n.lang === 'en') return p.nameEn || p.nameRu;
+  return p.nameRu;
 }
 
 function productDescription(p) {
-  return I18n.lang === 'kk' ? p.descriptionKk : p.descriptionRu;
+  if (I18n.lang === 'kk') return p.descriptionKk;
+  if (I18n.lang === 'en') return p.descriptionEn || p.descriptionRu;
+  return p.descriptionRu;
 }
 
 function categoryName(c) {
-  return I18n.lang === 'kk' ? c.name_kk : c.name_ru;
+  if (I18n.lang === 'kk') return c.name_kk;
+  if (I18n.lang === 'en') return c.name_en || c.name_ru;
+  return c.name_ru;
 }
 
 function formatPrice(price) {

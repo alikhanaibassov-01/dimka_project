@@ -3,17 +3,18 @@ const I18n = {
   strings: {},
 
   async init() {
-    const [kk, ru] = await Promise.all([
+    const [kk, ru, en] = await Promise.all([
       fetch('/locales/kk.json').then((r) => r.json()),
       fetch('/locales/ru.json').then((r) => r.json()),
+      fetch('/locales/en.json').then((r) => r.json()),
     ]);
-    I18n.strings = { kk, ru };
+    I18n.strings = { kk, ru, en };
     I18n.apply();
     I18n.bindLangSwitcher();
   },
 
   t(key) {
-    return I18n.strings[I18n.lang]?.[key] || key;
+    return I18n.strings[I18n.lang]?.[key] || I18n.strings.ru?.[key] || key;
   },
 
   setLang(lang) {
@@ -30,7 +31,9 @@ const I18n = {
       const key = el.getAttribute('data-i18n');
       const val = I18n.t(key);
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        el.placeholder = val;
+        if (el.type !== 'radio' && el.type !== 'checkbox') {
+          el.placeholder = val;
+        }
       } else {
         el.textContent = val;
       }

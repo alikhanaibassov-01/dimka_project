@@ -1,4 +1,7 @@
 async function initEditProduct() {
+  const ok = await requireAdminUser();
+  if (!ok) return;
+
   const form = document.getElementById('edit-product-form');
   if (!form || form.dataset.ready) return;
   form.dataset.ready = '1';
@@ -28,11 +31,13 @@ async function initEditProduct() {
 
   form.nameKk.value = product.nameKk;
   form.nameRu.value = product.nameRu;
+  if (form.nameEn) form.nameEn.value = product.nameEn || '';
   form.price.value = product.price;
   form.region.value = product.region;
   form.producerName.value = product.producerName;
   form.descriptionKk.value = product.descriptionKk;
   form.descriptionRu.value = product.descriptionRu;
+  if (form.descriptionEn) form.descriptionEn.value = product.descriptionEn || '';
   form.featured.checked = product.featured;
   form.inStock.checked = product.inStock;
   currentImg.src = product.imageUrl;
@@ -65,8 +70,10 @@ async function initEditProduct() {
         categoryId: fd.get('categoryId'),
         nameKk: fd.get('nameKk'),
         nameRu: fd.get('nameRu'),
+        nameEn: fd.get('nameEn'),
         descriptionKk: fd.get('descriptionKk'),
         descriptionRu: fd.get('descriptionRu'),
+        descriptionEn: fd.get('descriptionEn'),
         price: fd.get('price'),
         region: fd.get('region'),
         producerName: fd.get('producerName'),

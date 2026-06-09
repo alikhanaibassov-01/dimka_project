@@ -16,20 +16,20 @@ async function renderCheckoutSummary() {
   summary.innerHTML = `
     <ul class="space-y-2 border-b pb-4">${lines.join('')}</ul>
     <p class="mt-4 text-right text-lg font-bold">${I18n.t('cart.total')}: ${formatPrice(total)}</p>
-    <p class="mt-2 flex items-center gap-2 text-xs text-gray-500">
-      <span>Visa</span><span>·</span><span>Mastercard</span>
-    </p>
+    <div class="mt-3 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+      <span>Kaspi</span><span>·</span><span data-i18n="checkout.cod"></span>
+    </div>
   `;
+  I18n.apply();
 }
 
-function initCheckout() {
-  renderCheckoutSummary();
+async function initCheckout() {
+  await renderCheckoutSummary();
 
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('cancelled')) {
-    const errEl = document.getElementById('checkout-error');
-    errEl.textContent = I18n.t('checkout.cancelled');
-    errEl.classList.remove('hidden');
+  const user = getCurrentUser();
+  if (user?.role === 'client') {
+    const nameInput = document.querySelector('#checkout-form [name="name"]');
+    if (nameInput && !nameInput.value) nameInput.value = user.name;
   }
 
   document.getElementById('checkout-form').addEventListener('submit', async (e) => {
@@ -40,12 +40,14 @@ function initCheckout() {
 
     const fd = new FormData(e.target);
     const items = Cart.get();
+    const paymentMethod = fd.get('paymentMethod') || 'cod';
     const payload = {
       customerName: fd.get('name'),
       phone: fd.get('phone'),
       city: fd.get('city'),
       address: fd.get('address'),
       comment: fd.get('comment'),
+      paymentMethod,
       items: items.map((i) => ({ productId: i.productId, qty: i.qty })),
     };
 
@@ -53,9 +55,9 @@ function initCheckout() {
     btn.disabled = true;
 
     try {
-      const { url } = await API.createCheckoutSession(payload);
+      const { orderId } = await API.createOrder(payload);
       Cart.clear();
-      window.location.href = url;
+      window.location.href = `/order-success.html?orderId=${orderId}`;
     } catch (err) {
       errEl.textContent = err.message;
       errEl.classList.remove('hidden');

@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Товар — QazMarket</title>
+  <title>Заказы — QazMarket</title>
   <link rel="stylesheet" href="/css/output.css" />
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-800">
   <header id="site-header" class="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur"></header>
 
-  <main class="mx-auto max-w-6xl px-4 py-10">
-    <div id="product-detail"></div>
+  <main class="mx-auto max-w-3xl px-4 py-10">
+    <h1 class="text-2xl font-bold text-qaz-dark" data-i18n="admin.ordersTitle"></h1>
+    <p class="mt-2 text-sm text-gray-500" data-i18n="admin.ordersHint"></p>
+    <div id="admin-orders-list" class="mt-8 space-y-3"></div>
+    <a href="/manage-products.html" class="mt-8 inline-block text-sm text-qaz-teal hover:underline" data-i18n="manage.title"></a>
   </main>
 
   <footer id="site-footer" class="mt-16 border-t bg-white"></footer>
@@ -19,8 +22,8 @@
   <script src="/js/cart.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/auth-pages.js"></script>
   <script src="/js/layout.js"></script>
-  <script src="/js/product.js"></script>
   <script src="/js/app.js"></script>
 </body>
 </html>

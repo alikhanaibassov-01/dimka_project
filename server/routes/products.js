@@ -1,5 +1,8 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const { getDb } = require('../db');
+const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -9,8 +12,10 @@ function mapProduct(row) {
     categoryId: row.category_id,
     nameKk: row.name_kk,
     nameRu: row.name_ru,
+    nameEn: row.name_en || row.name_ru,
     descriptionKk: row.description_kk,
     descriptionRu: row.description_ru,
+    descriptionEn: row.description_en || row.description_ru,
     price: row.price,
     region: row.region,
     producerName: row.producer_name,
@@ -18,6 +23,7 @@ function mapProduct(row) {
     badge: row.badge,
     inStock: Boolean(row.in_stock),
     featured: Boolean(row.featured),
+    deleted: Boolean(row.deleted),
   };
 }
 
@@ -29,7 +35,10 @@ router.get('/', (req, res) => {
   const params = [];
 
   if (all !== '1') {
+    conditions.push('deleted = 0');
     conditions.push('in_stock = 1');
+  } else if (req.session?.role !== 'admin') {
+    conditions.push('deleted = 0');
   }
 
   if (category) {
@@ -41,9 +50,9 @@ router.get('/', (req, res) => {
     params.push(region);
   }
   if (q) {
-    conditions.push('(name_kk LIKE ? OR name_ru LIKE ?)');
+    conditions.push('(name_kk LIKE ? OR name_ru LIKE ? OR name_en LIKE ?)');
     const term = `%${q}%`;
-    params.push(term, term);
+    params.push(term, term, term);
   }
   if (minPrice) {
     conditions.push('price >= ?');
@@ -84,14 +93,16 @@ router.get('/', (req, res) => {
   });
 });
 
-router.post('/', (req, res) => {
+router.post('/', requireAdmin, (req, res) => {
   const db = getDb();
   const {
     categoryId,
     nameKk,
     nameRu,
+    nameEn,
     descriptionKk,
     descriptionRu,
+    descriptionEn,
     price,
     region,
     producerName,
@@ -107,16 +118,18 @@ router.post('/', (req, res) => {
   const result = db
     .prepare(
       `INSERT INTO products (
-        category_id, name_kk, name_ru, description_kk, description_ru,
-        price, region, producer_name, image_url, badge, in_stock, featured
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`
+        category_id, name_kk, name_ru, name_en, description_kk, description_ru, description_en,
+        price, region, producer_name, image_url, badge, in_stock, featured, deleted
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, 0)`
     )
     .run(
       Number(categoryId),
       nameKk.trim(),
       nameRu.trim(),
+      (nameEn || '').trim() || nameRu.trim(),
       (descriptionKk || '').trim() || nameKk.trim(),
       (descriptionRu || '').trim() || nameRu.trim(),
+      (descriptionEn || '').trim() || (descriptionRu || '').trim() || nameRu.trim(),
       Number(price),
       region.trim(),
       producerName.trim(),
@@ -132,7 +145,7 @@ router.post('/', (req, res) => {
 router.get('/regions', (req, res) => {
   const db = getDb();
   const regions = db
-    .prepare('SELECT DISTINCT region FROM products WHERE in_stock = 1 ORDER BY region')
+    .prepare('SELECT DISTINCT region FROM products WHERE in_stock = 1 AND deleted = 0 ORDER BY region')
     .all()
     .map((r) => r.region);
   res.json(regions);
@@ -140,17 +153,17 @@ router.get('/regions', (req, res) => {
 
 router.get('/:id', (req, res) => {
   const db = getDb();
-  const row = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
+  const row = db.prepare('SELECT * FROM products WHERE id = ? AND deleted = 0').get(req.params.id);
   if (!row) {
     return res.status(404).json({ error: 'Товар табылмады / Товар не найден' });
   }
   res.json(mapProduct(row));
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', requireAdmin, (req, res) => {
   const db = getDb();
   const id = Number(req.params.id);
-  const existing = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
+  const existing = db.prepare('SELECT * FROM products WHERE id = ? AND deleted = 0').get(id);
   if (!existing) {
     return res.status(404).json({ error: 'Товар не найден / Товар табылмады' });
   }
@@ -159,8 +172,10 @@ router.put('/:id', (req, res) => {
     categoryId,
     nameKk,
     nameRu,
+    nameEn,
     descriptionKk,
     descriptionRu,
+    descriptionEn,
     price,
     region,
     producerName,
@@ -178,7 +193,8 @@ router.put('/:id', (req, res) => {
 
   db.prepare(
     `UPDATE products SET
-      category_id = ?, name_kk = ?, name_ru = ?, description_kk = ?, description_ru = ?,
+      category_id = ?, name_kk = ?, name_ru = ?, name_en = ?,
+      description_kk = ?, description_ru = ?, description_en = ?,
       price = ?, region = ?, producer_name = ?, image_url = ?, badge = ?,
       in_stock = ?, featured = ?
     WHERE id = ?`
@@ -186,8 +202,10 @@ router.put('/:id', (req, res) => {
     Number(categoryId),
     nameKk.trim(),
     nameRu.trim(),
+    (nameEn || '').trim() || nameRu.trim(),
     (descriptionKk || '').trim() || nameKk.trim(),
     (descriptionRu || '').trim() || nameRu.trim(),
+    (descriptionEn || '').trim() || (descriptionRu || '').trim() || nameRu.trim(),
     Number(price),
     region.trim(),
     producerName.trim(),
@@ -200,6 +218,30 @@ router.put('/:id', (req, res) => {
 
   const row = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
   res.json(mapProduct(row));
+});
+
+router.delete('/:id', requireAdmin, (req, res) => {
+  const db = getDb();
+  const id = Number(req.params.id);
+  const existing = db.prepare('SELECT * FROM products WHERE id = ? AND deleted = 0').get(id);
+  if (!existing) {
+    return res.status(404).json({ error: 'Товар не найден' });
+  }
+
+  db.prepare('UPDATE products SET deleted = 1, in_stock = 0 WHERE id = ?').run(id);
+
+  if (existing.image_url?.startsWith('/uploads/')) {
+    const filepath = path.join(__dirname, '..', '..', 'public', existing.image_url);
+    if (fs.existsSync(filepath)) {
+      try {
+        fs.unlinkSync(filepath);
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  res.json({ ok: true });
 });
 
 module.exports = router;

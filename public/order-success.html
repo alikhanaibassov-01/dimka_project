@@ -23,6 +23,18 @@
     <p class="mt-2 text-sm text-gray-500">
       <span id="order-status"></span>
     </p>
+
+    <div id="kaspi-instructions" class="mt-8 hidden rounded-xl border border-red-100 bg-red-50 p-6 text-left text-sm">
+      <h2 class="text-center text-lg font-bold text-red-700" data-i18n="success.kaspiTitle"></h2>
+      <ol class="mt-4 space-y-3 text-gray-700">
+        <li>1. <span data-i18n="success.kaspiStep1"></span></li>
+        <li>2. <span data-i18n="success.kaspiStep2"></span>: <strong id="kaspi-phone" class="text-qaz-dark"></strong> (<span id="kaspi-recipient"></span>)</li>
+        <li>3. <span data-i18n="success.kaspiStep3"></span>: <strong id="kaspi-amount" class="text-qaz-teal"></strong></li>
+        <li>4. <span data-i18n="success.kaspiStep4"></span>: <code id="kaspi-comment" class="rounded bg-white px-2 py-1 text-qaz-dark"></code></li>
+      </ol>
+      <p class="mt-4 text-center text-xs text-gray-500" data-i18n="success.kaspiNote"></p>
+    </div>
+
     <a href="/" class="btn-primary mt-10 inline-flex" data-i18n="success.home"></a>
   </main>
 
@@ -31,6 +43,7 @@
   <script src="/js/i18n.js"></script>
   <script src="/js/cart.js"></script>
   <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
   <script src="/js/layout.js"></script>
   <script src="/js/order-success.js"></script>
   <script src="/js/app.js"></script>

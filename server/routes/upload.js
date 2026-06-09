@@ -3,6 +3,7 @@ const path = require('path');
 const multer = require('multer');
 const sharp = require('sharp');
 const express = require('express');
+const { requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 const uploadsDir = path.join(__dirname, '..', '..', 'public', 'uploads');
@@ -20,7 +21,7 @@ const upload = multer({
   },
 });
 
-router.post('/', upload.single('image'), async (req, res, next) => {
+router.post('/', requireAdmin, upload.single('image'), async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Выберите изображение / Сурет таңдаңыз' });

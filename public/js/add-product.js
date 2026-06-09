@@ -1,4 +1,7 @@
 async function initAddProduct() {
+  const ok = await requireAdminUser();
+  if (!ok) return;
+
   const form = document.getElementById('add-product-form');
   if (!form || form.dataset.ready) return;
   form.dataset.ready = '1';
@@ -47,8 +50,10 @@ async function initAddProduct() {
         categoryId: fd.get('categoryId'),
         nameKk: fd.get('nameKk'),
         nameRu: fd.get('nameRu'),
+        nameEn: fd.get('nameEn'),
         descriptionKk: fd.get('descriptionKk'),
         descriptionRu: fd.get('descriptionRu'),
+        descriptionEn: fd.get('descriptionEn'),
         price: fd.get('price'),
         region: fd.get('region'),
         producerName: fd.get('producerName'),
