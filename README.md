@@ -56,7 +56,10 @@ KASPI_RECIPIENT=QazMarket
 3. Variables: `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `KASPI_PHONE`, `BASE_URL`
 4. Volume: `/app/data` и `/app/public/uploads`
 
-## API
+## Дипломная работа
+
+Текст ВКР (содержание, главы 1–4, заключение, литература, приложения): **[docs/diploma/](docs/diploma/)**
+
 
 | Метод | Путь | Описание |
 |-------|------|----------|
