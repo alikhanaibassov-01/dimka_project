@@ -105,15 +105,27 @@ const API = {
     return json;
   },
 
-  async register(email, password, name) {
+  async register(email, password) {
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ email, password }),
     });
     const json = await res.json();
     if (!res.ok) throw new Error(json.error || 'Register failed');
+    return json;
+  },
+
+  async updateProfile(data) {
+    const res = await fetch('/api/auth/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || 'Failed');
     return json;
   },
 

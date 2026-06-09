@@ -10,6 +10,7 @@ function initLogin() {
     const fd = new FormData(form);
     try {
       const user = await API.login(fd.get('email'), fd.get('password'));
+      currentUser = user;
       if (user.role === 'admin') {
         window.location.href = '/manage-products.html';
       } else {
@@ -33,7 +34,8 @@ function initRegister() {
     errEl.classList.add('hidden');
     const fd = new FormData(form);
     try {
-      await API.register(fd.get('email'), fd.get('password'), fd.get('name'));
+      const user = await API.register(fd.get('email'), fd.get('password'));
+      currentUser = user;
       window.location.href = '/account.html';
     } catch (err) {
       errEl.textContent = err.message;
@@ -58,6 +60,7 @@ function initAdminLogin() {
         await API.logout();
         throw new Error(I18n.t('auth.adminHint'));
       }
+      currentUser = user;
       window.location.href = '/manage-products.html';
     } catch (err) {
       errEl.textContent = err.message;
@@ -70,8 +73,33 @@ async function initAccount() {
   const user = await requireClient();
   if (!user) return;
 
-  document.getElementById('account-name').textContent = user.name;
   document.getElementById('account-email').textContent = user.email;
+
+  const profileForm = document.getElementById('profile-form');
+  profileForm.lastName.value = user.lastName || '';
+  profileForm.firstName.value = user.firstName || '';
+  profileForm.phone.value = user.phone || '';
+
+  profileForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById('profile-error');
+    const okEl = document.getElementById('profile-success');
+    errEl.classList.add('hidden');
+    okEl.classList.add('hidden');
+    const fd = new FormData(profileForm);
+    try {
+      const updated = await API.updateProfile({
+        lastName: fd.get('lastName'),
+        firstName: fd.get('firstName'),
+        phone: fd.get('phone'),
+      });
+      currentUser = updated;
+      okEl.classList.remove('hidden');
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.classList.remove('hidden');
+    }
+  });
 
   const container = document.getElementById('account-orders');
   try {
@@ -81,18 +109,20 @@ async function initAccount() {
       return;
     }
     container.innerHTML = orders
-      .map(
-        (o) => `
+      .map((o) => {
+        const delivery =
+          o.delivery_method === 'pickup' ? I18n.t('checkout.pickup') : o.city;
+        return `
       <div class="rounded-lg border bg-white p-4 text-sm">
         <div class="flex justify-between font-medium">
           <span>#${o.id}</span>
           <span>${formatPrice(o.total)}</span>
         </div>
-        <p class="mt-1 text-gray-500">${o.created_at?.slice(0, 10) || ''} · ${o.city}</p>
+        <p class="mt-1 text-gray-500">${o.created_at?.slice(0, 10) || ''} · ${delivery}</p>
         <p class="mt-1 text-qaz-teal">${paymentStatusLabel(o.payment_status, o.payment_method)}</p>
       </div>
-    `
-      )
+    `;
+      })
       .join('');
   } catch {
     container.innerHTML = '<p class="text-red-500">Error</p>';
@@ -109,13 +139,18 @@ async function initAdminOrders() {
     try {
       const orders = await API.getAdminOrders();
       container.innerHTML = orders
-        .map(
-          (o) => `
+        .map((o) => {
+          const deliveryLabel =
+            o.delivery_method === 'pickup'
+              ? `${I18n.t('checkout.pickup')}: ${o.address}`
+              : `${o.city}, ${o.address}`;
+          return `
         <div class="rounded-lg border bg-white p-4 text-sm">
           <div class="flex flex-wrap items-start justify-between gap-2">
             <div>
               <p class="font-semibold">#${o.id} · ${o.customer_name}</p>
-              <p class="text-gray-500">${o.phone} · ${o.city}</p>
+              <p class="text-gray-500">${o.phone}</p>
+              <p class="text-gray-500">${deliveryLabel}</p>
               <p class="mt-1">${formatPrice(o.total)} · ${paymentStatusLabel(o.payment_status, o.payment_method)}</p>
             </div>
             ${
@@ -125,8 +160,8 @@ async function initAdminOrders() {
             }
           </div>
         </div>
-      `
-        )
+      `;
+        })
         .join('');
 
       container.querySelectorAll('.confirm-paid-btn').forEach((btn) => {
@@ -141,8 +176,4 @@ async function initAdminOrders() {
   }
 
   load();
-}
-
-async function initAddProductGuard() {
-  return requireAdminUser();
 }

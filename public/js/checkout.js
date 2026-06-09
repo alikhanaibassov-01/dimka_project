@@ -23,35 +23,78 @@ async function renderCheckoutSummary() {
   I18n.apply();
 }
 
+function toggleDeliveryMode(form) {
+  const isPickup = form.deliveryMethod.value === 'pickup';
+  const deliveryFields = document.getElementById('delivery-fields');
+  const mapBlock = document.getElementById('pickup-map-checkout');
+  const cityInput = form.city;
+  const addressInput = form.address;
+
+  if (deliveryFields) deliveryFields.classList.toggle('hidden', isPickup);
+  if (mapBlock) {
+    mapBlock.classList.toggle('hidden', !isPickup);
+    if (isPickup) {
+      mapBlock.dataset.loaded = '';
+      renderPickupMap('pickup-map-checkout');
+    }
+  }
+
+  cityInput.required = !isPickup;
+  addressInput.required = !isPickup;
+  if (isPickup) {
+    cityInput.value = '';
+    addressInput.value = '';
+  }
+}
+
+function prefillCheckoutFromUser(form, user) {
+  if (!user || user.role !== 'client') return;
+  if (user.lastName && !form.lastName.value) form.lastName.value = user.lastName;
+  if (user.firstName && !form.firstName.value) form.firstName.value = user.firstName;
+  if (user.phone && !form.phone.value) form.phone.value = user.phone;
+}
+
 async function initCheckout() {
   await renderCheckoutSummary();
 
+  const form = document.getElementById('checkout-form');
   const user = getCurrentUser();
-  if (user?.role === 'client') {
-    const nameInput = document.querySelector('#checkout-form [name="name"]');
-    if (nameInput && !nameInput.value) nameInput.value = user.name;
+  prefillCheckoutFromUser(form, user);
+
+  if (user?.role === 'client' && (!user.firstName || !user.lastName || !user.phone)) {
+    const warn = document.createElement('p');
+    warn.className = 'rounded-lg bg-amber-50 p-3 text-sm text-amber-800';
+    warn.innerHTML = `${I18n.t('checkout.fillProfile')} <a href="/account.html" class="font-semibold underline">${I18n.t('nav.account')}</a>`;
+    form.prepend(warn);
   }
 
-  document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+  form.querySelectorAll('[name="deliveryMethod"]').forEach((radio) => {
+    radio.addEventListener('change', () => toggleDeliveryMode(form));
+  });
+  toggleDeliveryMode(form);
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const errEl = document.getElementById('checkout-error');
     errEl.classList.add('hidden');
     errEl.textContent = '';
 
-    const fd = new FormData(e.target);
+    const fd = new FormData(form);
     const items = Cart.get();
-    const paymentMethod = fd.get('paymentMethod') || 'cod';
+    const isPickup = fd.get('deliveryMethod') === 'pickup';
     const payload = {
-      customerName: fd.get('name'),
+      firstName: fd.get('firstName'),
+      lastName: fd.get('lastName'),
       phone: fd.get('phone'),
-      city: fd.get('city'),
-      address: fd.get('address'),
+      city: isPickup ? PICKUP.city : fd.get('city'),
+      address: isPickup ? PICKUP.address : fd.get('address'),
       comment: fd.get('comment'),
-      paymentMethod,
+      paymentMethod: fd.get('paymentMethod') || 'cod',
+      deliveryMethod: fd.get('deliveryMethod') || 'delivery',
       items: items.map((i) => ({ productId: i.productId, qty: i.qty })),
     };
 
-    const btn = e.target.querySelector('[type="submit"]');
+    const btn = form.querySelector('[type="submit"]');
     btn.disabled = true;
 
     try {

@@ -11,10 +11,26 @@
 
   <main class="mx-auto max-w-2xl px-4 py-10">
     <h1 class="text-2xl font-bold text-qaz-dark" data-i18n="account.title"></h1>
-    <div class="mt-4 rounded-xl border bg-white p-6 shadow-sm">
-      <p class="font-semibold" id="account-name"></p>
-      <p class="text-sm text-gray-500" id="account-email"></p>
-    </div>
+    <p class="mt-1 text-sm text-gray-500" id="account-email"></p>
+
+    <form id="profile-form" class="mt-6 space-y-4 rounded-xl border bg-white p-6 shadow-sm">
+      <h2 class="font-semibold text-gray-800" data-i18n="account.profile"></h2>
+      <div>
+        <label class="mb-1 block text-sm font-medium" data-i18n="account.lastName"></label>
+        <input type="text" name="lastName" required class="input-field" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium" data-i18n="account.firstName"></label>
+        <input type="text" name="firstName" required class="input-field" />
+      </div>
+      <div>
+        <label class="mb-1 block text-sm font-medium" data-i18n="account.phone"></label>
+        <input type="tel" name="phone" required class="input-field" placeholder="+7 7XX XXX XX XX" />
+      </div>
+      <p id="profile-error" class="hidden text-sm text-red-600"></p>
+      <p id="profile-success" class="hidden text-sm text-green-600" data-i18n="account.saved"></p>
+      <button type="submit" class="btn-primary" data-i18n="account.save"></button>
+    </form>
 
     <h2 class="mt-10 text-lg font-semibold" data-i18n="account.orders"></h2>
     <div id="account-orders" class="mt-4 space-y-3"></div>

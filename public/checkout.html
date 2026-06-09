@@ -15,22 +15,52 @@
 
     <div class="mt-8 grid gap-8 lg:grid-cols-2">
       <form id="checkout-form" class="space-y-4 rounded-xl border bg-white p-6 shadow-sm">
-        <div>
-          <label class="mb-1 block text-sm font-medium" data-i18n="checkout.name"></label>
-          <input type="text" name="name" required class="input-field" />
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label class="mb-1 block text-sm font-medium" data-i18n="account.lastName"></label>
+            <input type="text" name="lastName" required class="input-field" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium" data-i18n="account.firstName"></label>
+            <input type="text" name="firstName" required class="input-field" />
+          </div>
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium" data-i18n="checkout.phone"></label>
+          <label class="mb-1 block text-sm font-medium" data-i18n="account.phone"></label>
           <input type="tel" name="phone" required class="input-field" placeholder="+7 7XX XXX XX XX" />
         </div>
-        <div>
-          <label class="mb-1 block text-sm font-medium" data-i18n="checkout.city"></label>
-          <input type="text" name="city" required class="input-field" />
+
+        <fieldset class="space-y-3 rounded-lg border border-gray-100 bg-gray-50 p-4">
+          <legend class="px-1 text-sm font-medium" data-i18n="checkout.deliveryMethod"></legend>
+          <label class="flex cursor-pointer gap-3 rounded-lg border bg-white p-3 has-[:checked]:border-qaz-teal has-[:checked]:ring-1 has-[:checked]:ring-qaz-teal">
+            <input type="radio" name="deliveryMethod" value="delivery" class="mt-1" checked />
+            <span>
+              <span class="block font-medium" data-i18n="checkout.delivery"></span>
+              <span class="text-xs text-gray-500" data-i18n="checkout.deliveryHint"></span>
+            </span>
+          </label>
+          <label class="flex cursor-pointer gap-3 rounded-lg border bg-white p-3 has-[:checked]:border-qaz-teal has-[:checked]:ring-1 has-[:checked]:ring-qaz-teal">
+            <input type="radio" name="deliveryMethod" value="pickup" class="mt-1" />
+            <span>
+              <span class="block font-medium" data-i18n="checkout.pickup"></span>
+              <span class="text-xs text-gray-500" data-i18n="checkout.pickupHint"></span>
+            </span>
+          </label>
+        </fieldset>
+
+        <div id="delivery-fields" class="space-y-4">
+          <div>
+            <label class="mb-1 block text-sm font-medium" data-i18n="checkout.city"></label>
+            <input type="text" name="city" class="input-field" />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium" data-i18n="checkout.address"></label>
+            <input type="text" name="address" class="input-field" />
+          </div>
         </div>
-        <div>
-          <label class="mb-1 block text-sm font-medium" data-i18n="checkout.address"></label>
-          <input type="text" name="address" required class="input-field" />
-        </div>
+
+        <div id="pickup-map-checkout" class="hidden"></div>
+
         <div>
           <label class="mb-1 block text-sm font-medium" data-i18n="checkout.comment"></label>
           <textarea name="comment" rows="3" class="input-field"></textarea>
@@ -71,6 +101,7 @@
   <script src="/js/cart.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/pickup-map.js"></script>
   <script src="/js/layout.js"></script>
   <script src="/js/checkout.js"></script>
   <script src="/js/app.js"></script>

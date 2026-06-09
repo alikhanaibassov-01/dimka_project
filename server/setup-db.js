@@ -57,6 +57,21 @@ function migrate(db) {
     if (!columnExists(db, 'orders', 'payment_status')) {
       db.exec(`ALTER TABLE orders ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'pending'`);
     }
+    if (!columnExists(db, 'orders', 'delivery_method')) {
+      db.exec(`ALTER TABLE orders ADD COLUMN delivery_method TEXT NOT NULL DEFAULT 'delivery'`);
+    }
+  }
+
+  if (tableExists(db, 'users')) {
+    if (!columnExists(db, 'users', 'first_name')) {
+      db.exec(`ALTER TABLE users ADD COLUMN first_name TEXT NOT NULL DEFAULT ''`);
+    }
+    if (!columnExists(db, 'users', 'last_name')) {
+      db.exec(`ALTER TABLE users ADD COLUMN last_name TEXT NOT NULL DEFAULT ''`);
+    }
+    if (!columnExists(db, 'users', 'phone')) {
+      db.exec(`ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''`);
+    }
   }
 }
 

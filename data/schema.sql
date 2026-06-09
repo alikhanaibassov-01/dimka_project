@@ -9,6 +9,9 @@ CREATE TABLE users (
   email TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
+  first_name TEXT NOT NULL DEFAULT '',
+  last_name TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
   role TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('client', 'admin')),
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -52,7 +55,8 @@ CREATE TABLE orders (
   total INTEGER NOT NULL,
   status TEXT NOT NULL DEFAULT 'new',
   payment_status TEXT NOT NULL DEFAULT 'pending',
-  payment_method TEXT NOT NULL DEFAULT 'cod'
+  payment_method TEXT NOT NULL DEFAULT 'cod',
+  delivery_method TEXT NOT NULL DEFAULT 'delivery'
 );
 
 CREATE TABLE order_items (
