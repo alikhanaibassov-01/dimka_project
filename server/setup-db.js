@@ -75,6 +75,41 @@ function migrate(db) {
   }
 }
 
+function seedProducts(db) {
+  // Засеваем только пустой каталог: добавленные и удалённые через
+  // админку товары при перезапуске не трогаются.
+  const { c } = db.prepare(`SELECT COUNT(*) AS c FROM products`).get();
+  if (c > 0) return;
+
+  const seed = require('./seed-products');
+  const catBySlug = {};
+  for (const row of db.prepare(`SELECT id, slug FROM categories`).all()) {
+    catBySlug[row.slug] = row.id;
+  }
+
+  const insert = db.prepare(`
+    INSERT INTO products
+      (category_id, name_kk, name_ru, name_en,
+       description_kk, description_ru, description_en,
+       price, region, producer_name, image_url, badge, in_stock, featured)
+    VALUES
+      (@category_id, @name_kk, @name_ru, @name_en,
+       @description_kk, @description_ru, @description_en,
+       @price, @region, @producer_name, @image_url, @badge, 1, @featured)
+  `);
+
+  const insertAll = db.transaction((items) => {
+    for (const p of items) {
+      const categoryId = catBySlug[p.category];
+      if (!categoryId) continue;
+      insert.run({ ...p, category_id: categoryId });
+    }
+  });
+
+  insertAll(seed);
+  console.log(`Seed catalog inserted: ${seed.length} products`);
+}
+
 function seedAdmin(db) {
   const adminEmail = (process.env.ADMIN_EMAIL || 'admin@qazmarket.kz').toLowerCase();
   const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
@@ -116,6 +151,7 @@ function ensureDb({ reset = false } = {}) {
   }
 
   seedAdmin(db);
+  seedProducts(db);
   db.close();
 }
 
