@@ -28,7 +28,7 @@ module.exports = [
     price: 1500,
     region: 'Жамбылская область',
     producer_name: 'Шаруа қожалығы «Қымыз Әже»',
-    image_url: '/seed/kumys.svg',
+    image_url: '/seed/kumys.webp',
     badge: 'organic',
     featured: 1,
   },
@@ -43,9 +43,9 @@ module.exports = [
     price: 1800,
     region: 'Туркестанская область',
     producer_name: 'Шаруа қожалығы «Ақ түйе»',
-    image_url: '/seed/shubat.svg',
+    image_url: '/seed/shubat.webp',
     badge: 'organic',
-    featured: 0,
+    featured: 1,
   },
   {
     category: 'food',
@@ -58,9 +58,9 @@ module.exports = [
     price: 1200,
     region: 'Алматинская область',
     producer_name: 'ИП «Дәстүр»',
-    image_url: '/seed/kurt.svg',
+    image_url: '/seed/kurt.webp',
     badge: 'local',
-    featured: 0,
+    featured: 1,
   },
   // ---------- Мёд и здоровье ----------
   {
@@ -91,7 +91,7 @@ module.exports = [
     producer_name: 'ИП «Дала шөптері»',
     image_url: '/seed/herbarium.webp',
     badge: 'organic',
-    featured: 0,
+    featured: 1,
   },
   // ---------- Текстиль ----------
   {
@@ -120,9 +120,9 @@ module.exports = [
     price: 25000,
     region: 'Туркестанская область',
     producer_name: 'Шеберхана «Көрпеше LUX»',
-    image_url: '/seed/korpeshe.svg',
+    image_url: '/seed/korpeshe.webp',
     badge: 'local',
-    featured: 0,
+    featured: 1,
   },
   {
     category: 'textile',
@@ -137,7 +137,7 @@ module.exports = [
     producer_name: 'Шеберхана «Оюлы»',
     image_url: '/seed/chapan.webp',
     badge: 'local',
-    featured: 0,
+    featured: 1,
   },
   // ---------- Ремесло ----------
   {
@@ -183,6 +183,6 @@ module.exports = [
     producer_name: 'Кооператив «Киіз үй»',
     image_url: '/seed/syrmak-navy.webp',
     badge: 'local',
-    featured: 0,
+    featured: 1,
   },
 ];

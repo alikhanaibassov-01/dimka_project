@@ -2,7 +2,7 @@ async function loadFeatured() {
   const grid = document.getElementById('featured-grid');
   if (!grid) return;
   try {
-    const { items } = await API.getProducts({ featured: '1', limit: '8' });
+    const { items } = await API.getProducts({ featured: '1', limit: '12' });
     grid.innerHTML = items.map(productCardHtml).join('');
     bindAddToCart(grid);
   } catch (err) {
