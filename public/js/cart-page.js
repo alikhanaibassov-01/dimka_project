@@ -1,6 +1,25 @@
+// Загружает товары корзины; недоступные (удалённые) возвращает как null.
+async function loadCartProducts(items) {
+  const results = await Promise.all(
+    items.map((i) => API.getProduct(i.productId).catch(() => null))
+  );
+  const validItems = [];
+  const validProducts = [];
+  items.forEach((item, idx) => {
+    if (results[idx]) {
+      validItems.push(item);
+      validProducts.push(results[idx]);
+    }
+  });
+  if (validItems.length !== items.length) {
+    Cart.prune(validItems.map((i) => i.productId));
+  }
+  return { items: validItems, products: validProducts };
+}
+
 async function renderCart() {
   const container = document.getElementById('cart-content');
-  const items = Cart.get();
+  const { items, products } = await loadCartProducts(Cart.get());
 
   if (!items.length) {
     container.innerHTML = `
@@ -13,7 +32,6 @@ async function renderCart() {
     return;
   }
 
-  const products = await Promise.all(items.map((i) => API.getProduct(i.productId)));
   let total = 0;
   const rows = items.map((item, idx) => {
     const p = products[idx];

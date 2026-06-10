@@ -68,6 +68,7 @@ router.get('/', (req, res) => {
 
   const sortMap = {
     id: 'id ASC',
+    newest: 'id DESC',
     price_asc: 'price ASC',
     price_desc: 'price DESC',
     name: 'name_ru ASC',

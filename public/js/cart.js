@@ -51,6 +51,15 @@ const Cart = {
     return Cart.get().reduce((sum, i) => sum + i.qty, 0);
   },
 
+  // Убирает из корзины товары, которых больше нет в каталоге
+  // (например, после очистки БД или удаления товара админом).
+  prune(validIds) {
+    const items = Cart.get().filter((i) => validIds.includes(i.productId));
+    localStorage.setItem(CART_KEY, JSON.stringify(items));
+    Cart.updateBadge();
+    return items;
+  },
+
   updateBadge() {
     const el = document.getElementById('cart-badge');
     if (!el) return;

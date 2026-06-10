@@ -1,11 +1,18 @@
 async function renderCheckoutSummary() {
   const summary = document.getElementById('checkout-summary');
-  const items = Cart.get();
+  const raw = Cart.get();
+  const results = await Promise.all(
+    raw.map((i) => API.getProduct(i.productId).catch(() => null))
+  );
+  const items = raw.filter((_, idx) => results[idx]);
+  const products = results.filter(Boolean);
+  if (items.length !== raw.length) {
+    Cart.prune(items.map((i) => i.productId));
+  }
   if (!items.length) {
     window.location.href = '/cart.html';
     return;
   }
-  const products = await Promise.all(items.map((i) => API.getProduct(i.productId)));
   let total = 0;
   const lines = items.map((item, idx) => {
     const p = products[idx];
